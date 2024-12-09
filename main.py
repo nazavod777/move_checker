@@ -50,10 +50,10 @@ async def main() -> None:
 
 if __name__ == '__main__':
     if not exists(
-            path='result'
+            'result'
     ):
         mkdir(
-            path='result'
+            'result'
         )
     with open(
             file='data/accounts.txt',
