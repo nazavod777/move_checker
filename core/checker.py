@@ -47,16 +47,15 @@ class Checker:
             ) from error
 
     @retry(after=log_retry_error)
-    async def check_eligible(self) -> float:
+    async def _check_eligible(self,
+                             nonce: str) -> float:
         response_text: None = None
 
-        nonce: str = await self._get_nonce()
-
-        signed_message_hash: str = self.account.sign_message(
-            signable_message=encode_defunct(
-                text=f'Please sign this message to confirm ownership. nonce: {nonce}')).signature.hex()
-
         try:
+            signed_message_hash: str = self.account.sign_message(
+                signable_message=encode_defunct(
+                    text=f'Please sign this message to confirm ownership. nonce: {nonce}')).signature.hex()
+
             r: aiohttp.ClientResponse = await self.client.post(
                 url=f'https://claims.movementnetwork.xyz/api/claim/start',
                 proxy=get_proxy(),
@@ -86,7 +85,8 @@ class Checker:
             ) from error
 
     async def check_account(self) -> None:
-        allocation: float = await self.check_eligible()
+        nonce: str = await self._get_nonce()
+        allocation: float = await self._check_eligible(nonce=nonce)
 
         if allocation <= 0:
             logger.error(f'{self.account.address} | Not Eligible')
@@ -95,7 +95,7 @@ class Checker:
         async with asyncio.Lock():
             await append_file(
                 file_path='result/eligible.txt',
-                file_content=f'{self.account.key.hex()} | {allocation}\n'
+                file_content=f'{self.account.key.hex()} | {allocation} $MOVE\n'
             )
 
         logger.success(f'{self.account.address} | {allocation}')
