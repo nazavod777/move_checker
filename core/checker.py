@@ -95,10 +95,10 @@ class Checker:
         async with asyncio.Lock():
             await append_file(
                 file_path='result/eligible.txt',
-                file_content=f'{self.account.key.hex()} | {allocation_l1} $MOVE L1 | {allocation_l2} | {allocation_l2} $MOVE L2 | OKX USER: {is_okx_user} | CLAIMED ON L1: {is_claimed_on_l1} | CLAIMED ON L2: {is_claimed_on_l2}\n'
+                file_content=f'{self.account.key.hex()} | {allocation_l1} $MOVE L1 | {allocation_l2} $MOVE L2 | OKX USER: {is_okx_user} | CLAIMED ON L1: {is_claimed_on_l1} | CLAIMED ON L2: {is_claimed_on_l2}\n'
             )
 
-        logger.success(f'{self.account.address} | {self.account.key.hex()} | {allocation_l1} $MOVE L1 | {allocation_l2} | {allocation_l2} $MOVE L2 | OKX USER: {is_okx_user} | CLAIMED ON L1: {is_claimed_on_l1} | CLAIMED ON L2: {is_claimed_on_l2}')
+        logger.success(f'{self.account.address} | {self.account.key.hex()} | {allocation_l1} $MOVE L1 | {allocation_l2} $MOVE L2 | OKX USER: {is_okx_user} | CLAIMED ON L1: {is_claimed_on_l1} | CLAIMED ON L2: {is_claimed_on_l2}')
 
 
 async def check_account(
