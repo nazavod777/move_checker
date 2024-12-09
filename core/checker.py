@@ -47,9 +47,9 @@ class Checker:
             ) from error
 
     @retry(after=log_retry_error)
-    async def _check_eligible(self,
-                             nonce: str) -> tuple[float | None, float | None, bool | None, bool | None, bool | None]:
+    async def _check_eligible(self) -> tuple[float | None, float | None, bool | None, bool | None, bool | None]:
         response_text: None = None
+        nonce: str = await self._get_nonce()
 
         try:
             signed_message_hash: str = self.account.sign_message(
@@ -85,8 +85,7 @@ class Checker:
             ) from error
 
     async def check_account(self) -> None:
-        nonce: str = await self._get_nonce()
-        allocation_l1, allocation_l2, is_okx_user, is_claimed_on_l1, is_claimed_on_l2 = await self._check_eligible(nonce=nonce)
+        allocation_l1, allocation_l2, is_okx_user, is_claimed_on_l1, is_claimed_on_l2 = await self._check_eligible()
 
         if not allocation_l1 or allocation_l1 <= 0:
             logger.error(f'{self.account.address} | Not Eligible')
