@@ -48,7 +48,7 @@ class Checker:
 
     @retry(after=log_retry_error)
     async def _check_eligible(self,
-                             nonce: str) -> float:
+                             nonce: str) -> tuple[float | None, float | None, bool | None, bool | None, bool | None]:
         response_text: None = None
 
         try:
@@ -71,12 +71,12 @@ class Checker:
             response_json: dict = await r.json(content_type=None)
 
             if response_json.get('eligibility_status', '') == 'not_eligible':
-                return 0
+                return None, None, None, None, None
 
             if not response_json.get('amount', None):
                 raise Exception(f'{self.account.address} | Wrong Response When Checking Eligible: {response_text}')
 
-            return int(response_json['amount'])
+            return int(response_json['amount']), int(response_json['amountL2']), response_json['isOKXUser'], response_json['claimedOnL1'], response_json['claimedOnL2']
 
         except Exception as error:
             raise Exception(
@@ -86,19 +86,19 @@ class Checker:
 
     async def check_account(self) -> None:
         nonce: str = await self._get_nonce()
-        allocation: float = await self._check_eligible(nonce=nonce)
+        allocation_l1, allocation_l2, is_okx_user, is_claimed_on_l1, is_claimed_on_l2 = await self._check_eligible(nonce=nonce)
 
-        if allocation <= 0:
+        if not allocation_l1 or allocation_l1 <= 0:
             logger.error(f'{self.account.address} | Not Eligible')
             return
 
         async with asyncio.Lock():
             await append_file(
                 file_path='result/eligible.txt',
-                file_content=f'{self.account.key.hex()} | {allocation} $MOVE\n'
+                file_content=f'{self.account.key.hex()} | {allocation_l1} $MOVE L1 | {allocation_l2} | {allocation_l2} $MOVE L2 | OKX USER: {is_okx_user} | CLAIMED ON L1: {is_claimed_on_l1} | CLAIMED ON L2: {is_claimed_on_l2}\n'
             )
 
-        logger.success(f'{self.account.address} | {allocation}')
+        logger.success(f'{self.account.address} | {self.account.key.hex()} | {allocation_l1} $MOVE L1 | {allocation_l2} | {allocation_l2} $MOVE L2 | OKX USER: {is_okx_user} | CLAIMED ON L1: {is_claimed_on_l1} | CLAIMED ON L2: {is_claimed_on_l2}')
 
 
 async def check_account(
