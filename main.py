@@ -60,7 +60,7 @@ if __name__ == '__main__':
             mode='r',
             encoding='utf-8-sig'
     ) as file:
-        accounts_list: list[str] = [row.strip().split(':')[0] for row in file if row]
+        accounts_list: list[str] = [row.strip().split(':')[0].split('|')[0].strip().rstrip() for row in file if row]
 
     logger.success(f'Successfully Loaded {len(accounts_list)} Accounts')
     threads: int = int(input('\nThreads: '))
